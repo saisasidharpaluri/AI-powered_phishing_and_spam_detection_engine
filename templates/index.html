@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard Hybrid - Security Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ PhishGuard Hybrid</h1>
+            <p class="subtitle">Advanced Dual-Dataset Security Engine</p>
+        </header>
+
+        <div class="card">
+            <div class="input-section">
+                <div class="input-type-selector">
+                    <button id="emailBtn" class="type-btn active" onclick="switchType('email')">
+                        📧 Email Analysis
+                    </button>
+                    <button id="urlBtn" class="type-btn" onclick="switchType('url')">
+                        🔗 URL Analysis
+                    </button>
+                </div>
+
+                <div class="input-area">
+                    <textarea 
+                        id="inputText" 
+                        placeholder="Enter email body or suspicious URL for instant analysis..."
+                        rows="8"
+                    ></textarea>
+                </div>
+
+                <button id="analyzeBtn" class="analyze-btn" onclick="analyze()">
+                    Analyze Threat
+                </button>
+            </div>
+
+            <div id="result" class="result-section" style="display: none;">
+                <h2>Security Analysis Result</h2>
+                
+                <div class="security-score-container">
+                    <div class="score-circle">
+                        <svg width="200" height="200">
+                            <circle cx="100" cy="100" r="85" class="score-bg"/>
+                            <circle id="scoreCircle" cx="100" cy="100" r="85" class="score-fill"/>
+                        </svg>
+                        <div class="score-text">
+                            <span id="scoreValue" class="score-number">0</span>
+                            <span class="score-label">Security Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="threat-info">
+                    <div class="info-item">
+                        <span class="info-label">Threat Level:</span>
+                        <span id="threatLevel" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Classification:</span>
+                        <span id="classification" class="info-value">-</span>
+                    </div>
+                </div>
+
+                <div id="errorMsg" class="error-msg" style="display: none;"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Powered by Dual-Dataset Training | Random Forest + TF-IDF + URL Feature Engineering</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
