@@ -3,7 +3,6 @@ import joblib
 import pandas as pd
 import numpy as np
 import re
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 app = Flask(__name__)
 
@@ -66,7 +65,11 @@ def analyze_input(input_text, input_type):
                 'error': 'Model not loaded. Please train the model first.',
                 'security_score': 0,
                 'threat_level': 'Unknown',
-            'is_malicious': bool(False)
+                'is_malicious': False
+            }
+        
+        # Create feature vector
+        if input_type == 'email':
             # Use TF-IDF for email text
             tfidf_features = vectorizer.transform([input_text]).toarray()[0]
             
@@ -104,7 +107,7 @@ def analyze_input(input_text, input_type):
         threat_score = proba[1] * 100
         
         return {
-            'security_score': round(100 - threat_score, 2),  # Safety score (inverse of threat)
+            'security_score': round(100 - threat_score, 2),
             'threat_level': get_threat_level(threat_score),
             'is_malicious': bool(threat_score > 50)
         }
@@ -118,7 +121,7 @@ def analyze_input(input_text, input_type):
         }
 
 def get_threat_level(threat_score):
-    """Convert threat score bool(False)tegorical level"""
+    """Convert threat score to categorical level"""
     if threat_score < 20:
         return 'Very Low'
     elif threat_score < 40:

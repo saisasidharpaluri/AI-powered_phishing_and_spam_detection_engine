@@ -25,13 +25,18 @@ async function analyze() {
     const inputText = document.getElementById('inputText').value.trim();
     
     if (!inputText) {
-        alert('Please enter some text or URL to analyze');
+        showError('⚠️ Please enter some text or URL to analyze');
         return;
     }
     
     const analyzeBtn = document.getElementById('analyzeBtn');
+    const originalText = analyzeBtn.textContent;
     analyzeBtn.disabled = true;
+    analyzeBtn.classList.add('loading');
     analyzeBtn.textContent = 'Analyzing...';
+    
+    // Hide previous results
+    document.getElementById('result').style.display = 'none';
     
     try {
         const response = await fetch('/analyze', {
@@ -45,19 +50,25 @@ async function analyze() {
             })
         });
         
+        if (!response.ok) {
+            throw new Error('Server error');
+        }
+        
         const data = await response.json();
         
         if (data.error) {
-            showError(data.error);
+            showError('❌ ' + data.error);
         } else {
             displayResult(data);
         }
         
     } catch (error) {
-        showError('Failed to analyze. Please try again.');
+        showError('❌ Failed to analyze. Please ensure the model is trained and try again.');
+        console.error('Analysis error:', error);
     } finally {
         analyzeBtn.disabled = false;
-        analyzeBtn.textContent = 'Analyze Threat';
+        analyzeBtn.classList.remove('loading');
+        analyzeBtn.textContent = originalText;
     }
 }
 
@@ -66,6 +77,8 @@ function displayResult(data) {
     const errorMsg = document.getElementById('errorMsg');
     
     errorMsg.style.display = 'none';
+    document.querySelector('.security-score-container').style.display = 'flex';
+    document.querySelector('.threat-info').style.display = 'flex';
     resultSection.style.display = 'block';
     
     // Animate security score
@@ -73,12 +86,17 @@ function displayResult(data) {
     const scoreCircle = document.getElementById('scoreCircle');
     const score = data.security_score;
     
-    animateScore(scoreValue, score);
+    // Reset animation
+    scoreCircle.style.strokeDashoffset = 565;
     
-    // Update circle progress
-    const circumference = 534;
-    const offset = circumference - (score / 100) * circumference;
-    scoreCircle.style.strokeDashoffset = offset;
+    setTimeout(() => {
+        animateScore(scoreValue, score);
+        
+        // Update circle progress (circumference = 2 * π * r = 2 * π * 90)
+        const circumference = 565;
+        const offset = circumference - (score / 100) * circumference;
+        scoreCircle.style.strokeDashoffset = offset;
+    }, 100);
     
     // Update circle color based on score
     const circleContainer = scoreCircle.parentElement.parentElement;
@@ -90,16 +108,20 @@ function displayResult(data) {
     }
     
     // Update threat level
-    document.getElementById('threatLevel').textContent = data.threat_level;
+    const threatLevelEl = document.getElementById('threatLevel');
+    threatLevelEl.textContent = data.threat_level;
     
-    // Update classification
-    const classification = data.is_malicious ? '⚠️ MALICIOUS' : '✅ SAFE';
+    // Update classification with better styling
+    const classification = data.is_malicious ? '🚨 MALICIOUS' : '✅ SAFE';
     const classificationEl = document.getElementById('classification');
     classificationEl.textContent = classification;
-    classificationEl.style.color = data.is_malicious ? '#c62828' : '#2e7d32';
+    classificationEl.style.color = data.is_malicious ? '#dc2626' : '#059669';
+    classificationEl.style.fontWeight = '800';
     
     // Scroll to result
-    resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(() => {
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 200);
 }
 
 function animateScore(element, targetScore) {
@@ -122,8 +144,17 @@ function showError(message) {
     resultSection.style.display = 'block';
     errorMsg.style.display = 'block';
     errorMsg.textContent = message;
+    errorMsg.style.animation = 'shake 0.5s';
     
     // Hide other result elements
     document.querySelector('.security-score-container').style.display = 'none';
     document.querySelector('.threat-info').style.display = 'none';
+    
+    // Scroll to error
+    errorMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    // Remove animation after it completes
+    setTimeout(() => {
+        errorMsg.style.animation = '';
+    }, 500);
 }

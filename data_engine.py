@@ -7,7 +7,7 @@ class HybridDataEngine:
     def __init__(self, enron_path, phishing_path):
         self.enron_path = enron_path
         self.phishing_path = phishing_path
-        self.tfidf_vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
+        self.tfidf_vectorizer = TfidfVectorizer(max_features=5000, stop_words='english', ngram_range=(1, 2))
         # Map clean names to actual CSV column names
         self.url_feature_map = {
             'having_IPhaving_IP_Address': 'having_IP_Address',
@@ -37,7 +37,7 @@ class HybridDataEngine:
         tfidf_matrix = self.tfidf_vectorizer.fit_transform(df['text'])
         
         # Create DataFrame for features (toarray() converts sparse matrix to dense array)
-        tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=self.tfidf_vectorizer.get_feature_names_out())
+        tfidf_df = pd.DataFrame(np.asarray(tfidf_matrix.todense()), columns=self.tfidf_vectorizer.get_feature_names_out())
         
         # Add URL features columns (set to 0 for email data)
         for feat in self.url_features:
